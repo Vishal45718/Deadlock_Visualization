@@ -1,0 +1,260 @@
+## 1. Problem Statement
+
+**Why deadlocks are hard to understand:** Deadlocks are inherently abstract — they involve circular dependencies between invisible OS entities (processes and resources) that students can't directly observe. Textbook definitions of the "four Coffman conditions" (mutual exclusion, hold-and-wait, no preemption, circular wait) describe *what* a deadlock is, but not *how* it forms or *how* algorithms detect and resolve it. The Banker's Algorithm especially suffers from being presented as a dry matrix computation with no spatial intuition.
+
+**How visualization helps:** An interactive RAG (Resource Allocation Graph) lets students *cause* a deadlock by making assignments and requests, then *see* the cycle form in real time. When the Banker's Algorithm runs step-by-step, each matrix state corresponds to a visible change in the graph — connecting the math to the picture.
+
+**Core objectives:**
+- Simulate process/resource states visually using drag-and-drop
+- Detect deadlocks in real time as connections are added
+- Walk through detection, prevention, and recovery algorithms step-by-step
+- Make the state machine of OS resource management tangible
+
+---
+
+## 2. Architecture & Data Models
+
+Here's the full project architecture:
+
+```
+deadlock-visualizer/
+├── src/
+│   ├── components/
+│   │   ├── Canvas.jsx          # Main SVG drag-drop area
+│   │   ├── ProcessNode.jsx     # Circular process node (P1, P2...)
+│   │   ├── ResourceNode.jsx    # Square resource node with instances
+│   │   ├── Edge.jsx            # Allocation / request edges
+│   │   ├── ControlPanel.jsx    # Add nodes, run algorithms
+│   │   ├── MatrixView.jsx      # Allocation/Need/Available tables
+│   │   └── StepLog.jsx         # Step-by-step algorithm narration
+│   ├── algorithms/
+│   │   ├── deadlockDetection.js   # RAG cycle detection (DFS)
+│   │   ├── bankersAlgorithm.js    # Safety algorithm + resource request
+│   │   └── recovery.js            # Process termination / preemption
+│   ├── models/
+│   │   ├── Process.js          # Process data shape
+│   │   ├── Resource.js         # Resource data shape
+│   │   └── GraphState.js       # Full graph state definition
+│   ├── hooks/
+│   │   ├── useGraph.js         # Graph state + mutations
+│   │   ├── useDragDrop.js      # Drag logic for canvas nodes
+│   │   └── useAlgorithm.js     # Step-through algorithm runner
+│   └── utils/
+│       ├── graphUtils.js       # Adjacency list helpers
+│       └── matrixUtils.js      # Matrix math helpers
+```
+
+---
+
+## 3. Data Models (TypeScript)
+
+```typescript
+// models/Process.ts
+interface Process {
+  id: string;           // "P1", "P2"...
+  label: string;
+  x: number; y: number; // canvas position
+  state: 'running' | 'waiting' | 'deadlocked' | 'terminated';
+  allocation: number[]; // how many of each resource it holds
+  request: number[];    // how many of each resource it needs
+  maxDemand: number[];  // Banker's: max it will ever need
+}
+
+// models/Resource.ts
+interface Resource {
+  id: string;           // "R1", "R2"...
+  label: string;
+  x: number; y: number;
+  totalInstances: number;
+  availableInstances: number;
+}
+
+// models/GraphState.ts
+interface GraphState {
+  processes: Process[];
+  resources: Resource[];
+  // Adjacency: edges[fromId] = [toId, ...]
+  // Allocation edge: Resource -> Process (R holds P)
+  // Request edge: Process -> Resource (P wants R)
+  edges: { from: string; to: string; type: 'allocation' | 'request' }[];
+  available: number[];         // available[j] = instances of R_j free
+  allocationMatrix: number[][]; // [process][resource]
+  requestMatrix: number[][];    // [process][resource]
+  maxMatrix: number[][];        // [process][resource] (for Banker's)
+}
+```
+
+---
+
+## 4. Core Algorithms
+
+```javascript
+// algorithms/deadlockDetection.js
+// Detects cycles in the RAG using DFS
+// Returns array of node IDs involved in deadlock (empty = no deadlock)
+export function detectDeadlock(processes, resources, edges) {
+  const adj = {};
+  [...processes, ...resources].forEach(n => (adj[n.id] = []));
+  edges.forEach(({ from, to }) => adj[from].push(to));
+
+  const visited = new Set(), recStack = new Set(), cycle = [];
+
+  function dfs(nodeId) {
+    visited.add(nodeId);
+    recStack.add(nodeId);
+    for (const neighbor of adj[nodeId] || []) {
+      if (!visited.has(neighbor) && dfs(neighbor)) return true;
+      if (recStack.has(neighbor)) {
+        cycle.push(neighbor); // collect cycle members
+        return true;
+      }
+    }
+    recStack.delete(nodeId);
+    return false;
+  }
+
+  // Only initiate DFS from process nodes (convention)
+  for (const p of processes) {
+    if (!visited.has(p.id)) dfs(p.id);
+  }
+  return [...new Set(cycle)];
+}
+
+// algorithms/bankersAlgorithm.js
+// Returns { safe: boolean, safeSequence: string[], steps: StepLog[] }
+export function bankersAlgorithm(processes, available, allocation, need) {
+  const n = processes.length, m = available.length;
+  const work = [...available];
+  const finish = new Array(n).fill(false);
+  const safeSequence = [], steps = [];
+
+  let found = true;
+  while (found) {
+    found = false;
+    for (let i = 0; i < n; i++) {
+      if (!finish[i] && need[i].every((ni, j) => ni <= work[j])) {
+        steps.push({
+          message: `Process ${processes[i].id} can proceed — Need ≤ Work`,
+          highlightProcess: processes[i].id,
+          workSnapshot: [...work],
+        });
+        work.forEach((_, j) => (work[j] += allocation[i][j]));
+        finish[i] = true;
+        safeSequence.push(processes[i].id);
+        found = true;
+      }
+    }
+  }
+
+  const safe = finish.every(Boolean);
+  if (!safe) steps.push({ message: 'No safe sequence found — UNSAFE STATE', highlightProcess: null });
+  return { safe, safeSequence, steps };
+}
+
+// algorithms/recovery.js
+// Strategy 1: terminate process with most resources
+export function recoverByTermination(processes, deadlockedIds, allocationMatrix) {
+  const candidates = processes.filter(p => deadlockedIds.includes(p.id));
+  candidates.sort((a, b) => {
+    const sumA = allocationMatrix[a.id]?.reduce((s, v) => s + v, 0) || 0;
+    const sumB = allocationMatrix[b.id]?.reduce((s, v) => s + v, 0) || 0;
+    return sumB - sumA; // highest resource holder first
+  });
+  return candidates[0]; // terminate this one
+}
+```
+
+---
+
+## 5. Key React Hooks
+
+```javascript
+// hooks/useGraph.js
+import { useState, useCallback } from 'react';
+import { detectDeadlock } from '../algorithms/deadlockDetection';
+
+export function useGraph() {
+  const [state, setState] = useState({
+    processes: [], resources: [], edges: [],
+    available: [], allocationMatrix: {}, requestMatrix: {}
+  });
+
+  const addProcess = useCallback((x, y) => {
+    setState(s => {
+      const id = `P${s.processes.length + 1}`;
+      return { ...s, processes: [...s.processes, { id, label: id, x, y, state: 'running' }] };
+    });
+  }, []);
+
+  const addResource = useCallback((x, y, instances = 1) => {
+    setState(s => {
+      const id = `R${s.resources.length + 1}`;
+      return { ...s, resources: [...s.resources, { id, label: id, x, y, totalInstances: instances, availableInstances: instances }] };
+    });
+  }, []);
+
+  const addEdge = useCallback((from, to, type) => {
+    setState(s => {
+      const newEdges = [...s.edges, { from, to, type }];
+      const deadlocked = detectDeadlock(s.processes, s.resources, newEdges);
+      const updatedProcesses = s.processes.map(p => ({
+        ...p, state: deadlocked.includes(p.id) ? 'deadlocked' : 'running'
+      }));
+      return { ...s, edges: newEdges, processes: updatedProcesses };
+    });
+  }, []);
+
+  return { state, addProcess, addResource, addEdge };
+}
+```
+
+---
+
+Now let me build the full interactive Deadlock Visualizer:---
+
+## 6. Build Plan — Phase by Phase
+
+**Phase 1 — Basic Canvas (Week 1)**
+Get drag-and-drop working for process circles and resource squares. Hardcode 1-instance resources. No algorithms yet — just a visual playground. The SVG click/drag system above is your starter.
+
+**Phase 2 — Graph Connections (Week 2)**
+Implement edge drawing: click source → click target → draw arrow. Distinguish allocation edges (solid green, R→P) from request edges (dashed blue, P→R). Store in an adjacency list.
+
+**Phase 3 — Deadlock Detection (Week 2–3)**
+Wire in the DFS cycle detector. Mark nodes red when a cycle is found. The key insight to communicate visually: *back edges in DFS = circular wait*. Run detection every time an edge is added.
+
+**Phase 4 — Banker's Algorithm (Week 3–4)**
+Add a `maxDemand` field to each process (via a dialog). Derive `need = max - allocation`. Implement the safety check and display the safe sequence in the step log. The matrix view in the sidebar makes each matrix state visible.
+
+**Phase 5 — Recovery & Polish (Week 4–5)**
+Add the recovery step-through. Then: smooth animations (edge draw, node flash), pre-built scenario library, export/import as JSON.
+
+---
+
+## 7. Bonus Features to Add
+
+**Algorithm animation** — instead of showing all steps at once, highlight each node/edge as the DFS visits it, with a 600ms delay between steps. Use `setTimeout` chains.
+
+**Multi-instance resources** — right-click on a resource square (already in the demo) to add instances. Changes Banker's algorithm to use multi-unit allocation.
+
+**Scenario export** — `JSON.stringify({nodes, edges})` → download as `.json`. Add a file input to load it back. This lets students share deadlock scenarios.
+
+**Pre-built examples** — "Dining Philosophers" (5 processes), "Banker's safe state", "Banker's unsafe state", "No deadlock but waiting" — all loadable with one click (the preset buttons are already wired in the demo).
+
+**Process priorities** — assign a cost/priority to each process for smarter recovery ordering rather than always picking the one with most resources.
+
+---
+
+## How to Use the Demo Above
+
+The interactive visualizer is fully functional right now:
+
+- **+ Process** — click the canvas to place a process circle
+- **+ Resource** — click to place a resource square (right-click to add instances)
+- **Allocate R→P** — click a resource, then a process to give it a resource unit
+- **Request P→R** — click a process, then a resource to mark it as waiting
+- Deadlock is detected automatically as you draw — red nodes and edges appear instantly
+- **Preset: Dining** loads the classic 3-process circular deadlock
+- **Preset: Safe** loads a safe state for Banker's demonstration
+- The three algorithm buttons run step-by-step walkthroughs in the bottom overlay panel
+- The sidebar matrix shows allocation and request matrices in real time
