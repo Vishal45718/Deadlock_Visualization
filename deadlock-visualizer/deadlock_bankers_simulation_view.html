@@ -1,0 +1,372 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0f14;--s:#141520;--s2:#1b1d2e;--s3:#222438;
+  --b:#2a2d45;--b2:#353858;
+  --t:#e2e4f0;--t2:#8b8fa8;--t3:#555873;
+  --accent:#6d75f7;--ag:rgba(109,117,247,0.18);
+  --green:#3ecf8e;--green-bg:rgba(62,207,142,0.1);
+  --red:#f7614b;--red-bg:rgba(247,97,75,0.1);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t);font-size:13px;line-height:1.5;padding:0}
+
+.layout{display:flex;height:600px}
+
+/* TOPBAR */
+.topbar{height:48px;background:var(--s);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 16px;gap:12px}
+.logo{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.logo-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:transparent;font-family:var(--font)}
+.tab.active{background:var(--s3);color:var(--t);border:1px solid var(--b)}
+
+/* LEFT: step trace */
+.step-panel{
+  width:280px;flex-shrink:0;
+  background:var(--s);border-right:1px solid var(--b);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.panel-hdr{
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--b);
+}
+.phdr-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.step-controls{display:flex;gap:6px;margin-bottom:0}
+.scbtn{
+  flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:500;
+  border:1px solid var(--b);background:var(--s2);color:var(--t2);
+  cursor:pointer;font-family:var(--font);text-align:center;
+}
+.scbtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.scbtn:hover{border-color:var(--b2);color:var(--t)}
+.scbtn.pri:hover{opacity:.9}
+
+.progress-bar{height:3px;background:var(--b);margin:12px 14px;border-radius:2px;position:relative}
+.progress-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .4s ease}
+
+.step-list{flex:1;overflow-y:auto;padding:10px}
+.step-item{
+  display:flex;gap:10px;padding:10px 10px;border-radius:8px;
+  margin-bottom:4px;cursor:default;border:1px solid transparent;
+  transition:background .15s;
+}
+.step-item.current{background:var(--s3);border-color:var(--b)}
+.step-item.done{opacity:.6}
+.step-item.upcoming{opacity:.35}
+.step-num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;flex-shrink:0;font-family:var(--mono);
+}
+.sn-done{background:var(--green-bg);color:var(--green)}
+.sn-current{background:var(--ag);color:var(--accent)}
+.sn-upcoming{background:var(--s2);color:var(--t3)}
+.step-body{}
+.step-proc{font-size:12px;font-weight:600;color:var(--t);font-family:var(--mono)}
+.step-desc{font-size:11px;color:var(--t2);margin-top:2px}
+.step-tag{
+  display:inline-block;padding:1px 7px;border-radius:4px;
+  font-size:10px;font-weight:600;margin-top:4px;
+}
+.tag-safe{background:var(--green-bg);color:var(--green)}
+.tag-curr{background:var(--ag);color:var(--accent)}
+.tag-wait{background:var(--amber-bg);color:var(--amber)}
+
+/* CENTER: matrices */
+.matrix-panel{flex:1;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.matrix-top{
+  padding:16px 20px 12px;
+  border-bottom:1px solid var(--b);
+  background:var(--s);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.avail-card{
+  background:var(--s2);border:1px solid var(--b);border-radius:8px;
+  padding:8px 14px;display:flex;align-items:center;gap:14px;
+}
+.avail-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.avail-chips{display:flex;gap:6px}
+.avail-chip{
+  background:var(--s3);border:1px solid var(--b2);border-radius:6px;
+  padding:4px 10px;font-size:12px;font-family:var(--mono);color:var(--green);font-weight:600;
+}
+.safe-sequence{
+  background:var(--green-bg);border:1px solid rgba(62,207,142,0.25);border-radius:8px;
+  padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;
+  color:var(--green);font-family:var(--mono);font-weight:600;margin-left:auto;
+}
+
+.matrix-body{flex:1;overflow-y:auto;padding:20px}
+.matrix-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mtable-wrap{background:var(--s);border:1px solid var(--b);border-radius:10px;overflow:hidden}
+.mtable-hdr{
+  padding:10px 14px;border-bottom:1px solid var(--b);
+  font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);
+}
+table.mtbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+table.mtbl th{
+  padding:8px 14px;text-align:center;
+  background:var(--s2);color:var(--t3);font-size:11px;font-weight:600;
+  border-bottom:1px solid var(--b);
+}
+table.mtbl th:first-child{text-align:left}
+table.mtbl td{
+  padding:8px 14px;text-align:center;color:var(--t2);
+  border-bottom:1px solid var(--b);
+}
+table.mtbl tr:last-child td{border-bottom:none}
+table.mtbl td:first-child{text-align:left;color:var(--t3)}
+table.mtbl tr.row-cur td{background:var(--ag);color:var(--accent)}
+table.mtbl tr.row-cur td:first-child{color:var(--accent)}
+table.mtbl tr.row-done td{color:var(--green);background:var(--green-bg)}
+table.mtbl tr.row-done td:first-child{color:var(--green)}
+table.mtbl td.highlight{color:var(--green);font-weight:600}
+table.mtbl td.exceeds{color:var(--red)}
+
+/* need check visual */
+.need-check{
+  grid-column:1/-1;
+  background:var(--s);border:1px solid var(--b);border-radius:10px;
+  padding:14px;
+}
+.nc-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.nc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;font-family:var(--mono)}
+.nc-label{color:var(--t3);min-width:60px}
+.nc-val{color:var(--t2)}
+.nc-op{color:var(--t3)}
+.nc-avail{color:var(--green)}
+.nc-arrow{color:var(--t3);margin:0 4px}
+.nc-result{font-weight:600}
+.nc-ok{color:var(--green)}
+.nc-fail{color:var(--red)}
+
+/* scrollbar */
+.step-list::-webkit-scrollbar,.matrix-body::-webkit-scrollbar{width:4px}
+.step-list::-webkit-scrollbar-thumb,.matrix-body::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px}
+</style>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">DV</div>
+    Deadlock Visualizer
+  </div>
+  <div style="width:1px;height:24px;background:var(--b);margin:0 4px"></div>
+  <button class="tab">RAG Editor</button>
+  <button class="tab active">Banker's Sim</button>
+  <button class="tab">Matrices</button>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button style="padding:5px 12px;border-radius:6px;font-size:12px;border:1px solid var(--b);background:var(--s2);color:var(--t2);cursor:pointer;font-family:var(--font)">Export ↑</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: Step trace panel -->
+  <div class="step-panel">
+    <div class="panel-hdr">
+      <div class="phdr-title">Simulation steps</div>
+      <div class="step-controls">
+        <button class="scbtn pri" id="runBtn" onclick="toggleRun()">▶ Run all</button>
+        <button class="scbtn" onclick="nextStep()">→ Next</button>
+        <button class="scbtn" onclick="resetSim()">↺</button>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:50%"></div></div>
+    <div class="step-list" id="stepList">
+      <div class="step-item done">
+        <div class="step-num sn-done">✓</div>
+        <div class="step-body">
+          <div class="step-proc">P2 — granted</div>
+          <div class="step-desc">Need (0,2,0) ≤ Available (3,3,2)</div>
+          <span class="step-tag tag-safe">Safe</span>
+        </div>
+      </div>
+      <div class="step-item current">
+        <div class="step-num sn-current">2</div>
+        <div class="step-body">
+          <div class="step-proc">P3 — evaluating</div>
+          <div class="step-desc">Need (0,0,2) ≤ Available (5,3,2)?</div>
+          <span class="step-tag tag-curr">Current</span>
+        </div>
+      </div>
+      <div class="step-item upcoming">
+        <div class="step-num sn-upcoming">3</div>
+        <div class="step-body">
+          <div class="step-proc">P1 — pending</div>
+          <div class="step-desc">Need (7,4,3) — insufficient resources</div>
+          <span class="step-tag tag-wait">Waiting</span>
+        </div>
+      </div>
+      <div class="step-item upcoming">
+        <div class="step-num sn-upcoming">4</div>
+        <div class="step-body">
+          <div class="step-proc">P4 — pending</div>
+          <div class="step-desc">Need (0,0,2)</div>
+          <span class="step-tag tag-wait">Waiting</span>
+        </div>
+      </div>
+      <div class="step-item upcoming">
+        <div class="step-num sn-upcoming">5</div>
+        <div class="step-body">
+          <div class="step-proc">P0 — pending</div>
+          <div class="step-desc">Need (7,4,3)</div>
+          <span class="step-tag tag-wait">Waiting</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Matrices -->
+  <div class="matrix-panel">
+    <div class="matrix-top">
+      <div class="avail-card">
+        <div class="avail-label">Available</div>
+        <div class="avail-chips">
+          <div class="avail-chip">A: 5</div>
+          <div class="avail-chip">B: 3</div>
+          <div class="avail-chip">C: 2</div>
+        </div>
+      </div>
+      <div class="safe-sequence">✓ Safe sequence: P2 → P3 → P1 → P4 → P0</div>
+    </div>
+
+    <div class="matrix-body">
+      <div class="matrix-grid">
+
+        <!-- Allocation -->
+        <div class="mtable-wrap">
+          <div class="mtable-hdr">Allocation</div>
+          <table class="mtbl">
+            <tr><th>Process</th><th>A</th><th>B</th><th>C</th></tr>
+            <tr><td>P0</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr class="row-done"><td>P1 (P2)</td><td>2</td><td>0</td><td>0</td></tr>
+            <tr class="row-cur"><td>P2 (P3)</td><td>3</td><td>0</td><td>2</td></tr>
+            <tr><td>P3</td><td>2</td><td>1</td><td>1</td></tr>
+            <tr><td>P4</td><td>0</td><td>0</td><td>2</td></tr>
+          </table>
+        </div>
+
+        <!-- Max -->
+        <div class="mtable-wrap">
+          <div class="mtable-hdr">Maximum claim</div>
+          <table class="mtbl">
+            <tr><th>Process</th><th>A</th><th>B</th><th>C</th></tr>
+            <tr><td>P0</td><td>7</td><td>5</td><td>3</td></tr>
+            <tr class="row-done"><td>P1</td><td>3</td><td>2</td><td>2</td></tr>
+            <tr class="row-cur"><td>P2</td><td>9</td><td>0</td><td>2</td></tr>
+            <tr><td>P3</td><td>2</td><td>2</td><td>2</td></tr>
+            <tr><td>P4</td><td>4</td><td>3</td><td>3</td></tr>
+          </table>
+        </div>
+
+        <!-- Need -->
+        <div class="mtable-wrap">
+          <div class="mtable-hdr">Need (Max − Allocation)</div>
+          <table class="mtbl">
+            <tr><th>Process</th><th>A</th><th>B</th><th>C</th></tr>
+            <tr><td>P0</td><td>7</td><td>4</td><td>3</td></tr>
+            <tr class="row-done"><td>P1</td><td class="highlight">0</td><td class="highlight">2</td><td class="highlight">0</td></tr>
+            <tr class="row-cur"><td>P2</td><td class="highlight">0</td><td>0</td><td class="highlight">2</td></tr>
+            <tr><td>P3</td><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>P4</td><td>4</td><td>3</td><td>1</td></tr>
+          </table>
+        </div>
+
+        <!-- Need satisfaction check -->
+        <div class="need-check" style="grid-column:auto">
+          <div class="nc-title">Step 2 — checking P3 (P2 in table)</div>
+          <div class="nc-row">
+            <span class="nc-label">Need[A]</span>
+            <span class="nc-val">0</span>
+            <span class="nc-op">≤</span>
+            <span class="nc-avail">5</span>
+            <span class="nc-arrow">→</span>
+            <span class="nc-result nc-ok">✓ Pass</span>
+          </div>
+          <div class="nc-row">
+            <span class="nc-label">Need[B]</span>
+            <span class="nc-val">0</span>
+            <span class="nc-op">≤</span>
+            <span class="nc-avail">3</span>
+            <span class="nc-arrow">→</span>
+            <span class="nc-result nc-ok">✓ Pass</span>
+          </div>
+          <div class="nc-row">
+            <span class="nc-label">Need[C]</span>
+            <span class="nc-val">2</span>
+            <span class="nc-op">≤</span>
+            <span class="nc-avail">2</span>
+            <span class="nc-arrow">→</span>
+            <span class="nc-result nc-ok">✓ Pass</span>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:var(--green-bg);border:1px solid rgba(62,207,142,0.25);border-radius:7px;font-size:12px;color:var(--green);font-family:var(--mono)">
+            → P3 granted. Available becomes (8, 3, 4) after resources returned.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let step = 2;
+const maxSteps = 5;
+
+function nextStep(){
+  if(step >= maxSteps) return;
+  step++;
+  updateProgress();
+  updateSteps();
+}
+function resetSim(){
+  step = 2;
+  updateProgress();
+  updateSteps();
+}
+function toggleRun(){
+  const btn = document.getElementById('runBtn');
+  if(step >= maxSteps){resetSim();return;}
+  btn.textContent = '⏸ Pause';
+  const iv = setInterval(()=>{
+    if(step >= maxSteps){clearInterval(iv);btn.textContent='▶ Run all';return;}
+    step++;updateProgress();updateSteps();
+  },700);
+}
+function updateProgress(){
+  document.getElementById('prog').style.width = ((step/maxSteps)*100)+'%';
+}
+function updateSteps(){
+  const items = document.querySelectorAll('.step-item');
+  items.forEach((it,i)=>{
+    it.className = 'step-item';
+    const num = it.querySelector('.step-num');
+    const tag = it.querySelector('.step-tag');
+    if(i < step-1){
+      it.classList.add('done');
+      num.className='step-num sn-done';num.textContent='✓';
+      if(tag){tag.className='step-tag tag-safe';tag.textContent='Safe'}
+    } else if(i === step-1){
+      it.classList.add('current');
+      num.className='step-num sn-current';num.textContent=i+1;
+      if(tag){tag.className='step-tag tag-curr';tag.textContent='Current'}
+    } else {
+      it.classList.add('upcoming');
+      num.className='step-num sn-upcoming';num.textContent=i+1;
+      if(tag){tag.className='step-tag tag-wait';tag.textContent='Waiting'}
+    }
+  });
+}
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>

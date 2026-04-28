@@ -68,9 +68,10 @@ function DeadlockConditionCard({ icon, title, desc }: { icon: string; title: str
   );
 }
 
-export default function HeroSection() {
+export default function HeroSection({ forceExpanded = false }: { forceExpanded?: boolean }) {
   const [activeTab, setActiveTab] = useState<Tab>('What is a Deadlock?');
   const [expanded, setExpanded] = useState(true);
+  const isExpanded = forceExpanded || expanded;
 
   return (
     <section className="rounded-3xl border border-white/5 bg-slate-900/40 backdrop-blur-xl p-6 shadow-2xl relative overflow-hidden">
@@ -96,7 +97,7 @@ export default function HeroSection() {
         </button>
       </div>
 
-      {expanded && (
+      {isExpanded && (
         <>
           {/* Tabs */}
           <div className="flex gap-1 mb-4 border-b border-white/5 pb-0">

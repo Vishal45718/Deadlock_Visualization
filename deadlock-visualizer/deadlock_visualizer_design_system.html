@@ -1,0 +1,216 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0f14;--s:#141520;--s2:#1b1d2e;--s3:#222438;
+  --b:#2a2d45;--b2:#353858;
+  --t:#e2e4f0;--t2:#8b8fa8;--t3:#555873;
+  --accent:#6d75f7;--ag:rgba(109,117,247,0.18);
+  --green:#3ecf8e;--red:#f7614b;--amber:#f5a623;
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t);font-size:13px;padding:16px;line-height:1.5}
+.section{margin-bottom:28px}
+.section-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--b)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.swatch{border-radius:8px;overflow:hidden;min-width:70px}
+.swatch-color{height:36px}
+.swatch-label{font-size:10px;color:var(--t3);padding:4px 6px;font-family:var(--mono)}
+
+.type-row{display:flex;flex-direction:column;gap:8px}
+.type-sample{display:flex;align-items:baseline;gap:14px}
+.type-meta{font-size:10px;color:var(--t3);font-family:var(--mono);min-width:150px}
+
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.comp-card{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px}
+.comp-card-title{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+
+/* Button demos */
+.btn{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:500;border:1px solid var(--b);background:var(--s2);color:var(--t2);cursor:default;font-family:var(--font);margin-right:6px;margin-bottom:6px;display:inline-block}
+.btn-pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-danger{background:rgba(247,97,75,0.12);border-color:rgba(247,97,75,0.35);color:var(--red)}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--t2)}
+.btn-icon{padding:7px 10px}
+
+/* Node demos */
+.node-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.demo-process{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:13px;
+}
+.demo-resource{
+  width:56px;height:56px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:12px;
+  position:relative;
+}
+.inst-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px}
+.inst-dot{width:6px;height:6px;border-radius:50%}
+.node-label{font-size:10px;color:var(--t3);text-align:center;margin-top:4px;font-family:var(--mono)}
+
+/* Edge demos */
+.edge-demo{display:flex;flex-direction:column;gap:8px}
+.edge-line{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--t2)}
+.eline{height:2px;width:60px;border-radius:1px}
+.edash{height:0;width:60px;border-top:2px dashed}
+
+/* Status demos */
+.status-demo{border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.sd-icon{font-size:13px}
+
+/* Badge/chip demos */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin:2px}
+
+/* Input demo */
+.inp{
+  width:100%;padding:7px 10px;border-radius:7px;
+  border:1px solid var(--b);background:var(--s2);
+  color:var(--t);font-size:12px;font-family:var(--font);
+  outline:none;margin-bottom:6px;
+}
+
+/* Spacing scale */
+.sp-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.sp-box{background:var(--accent);opacity:.6;height:12px;border-radius:2px}
+.sp-label{font-size:10px;color:var(--t3);font-family:var(--mono);min-width:80px}
+
+/* Toast demos */
+.toast{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;margin-bottom:8px;font-size:12px;border:1px solid}
+</style>
+
+<div class="section">
+  <div class="section-title">Color palette — semantic tokens</div>
+  <div class="row" style="margin-bottom:12px">
+    <div class="swatch"><div class="swatch-color" style="background:#0e0f14"></div><div class="swatch-label">--bg<br>#0e0f14</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#141520"></div><div class="swatch-label">--surface<br>#141520</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1b1d2e"></div><div class="swatch-label">--surface2<br>#1b1d2e</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#222438"></div><div class="swatch-label">--surface3<br>#222438</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#2a2d45"></div><div class="swatch-label">--border<br>#2a2d45</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#353858"></div><div class="swatch-label">--border2<br>#353858</div></div>
+  </div>
+  <div class="row">
+    <div class="swatch"><div class="swatch-color" style="background:#e2e4f0"></div><div class="swatch-label">--text<br>#e2e4f0</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#8b8fa8"></div><div class="swatch-label">--text2<br>#8b8fa8</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#555873"></div><div class="swatch-label">--text3<br>#555873</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#6d75f7"></div><div class="swatch-label">--accent<br>#6d75f7</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#3ecf8e"></div><div class="swatch-label">--green<br>#3ecf8e</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#f7614b"></div><div class="swatch-label">--red<br>#f7614b</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#f5a623"></div><div class="swatch-label">--amber<br>#f5a623</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Typography — DM Sans + JetBrains Mono</div>
+  <div class="type-row">
+    <div class="type-sample">
+      <span class="type-meta">DM Sans 600, 22px</span>
+      <span style="font-size:22px;font-weight:600;color:var(--t)">Deadlock Visualizer</span>
+    </div>
+    <div class="type-sample">
+      <span class="type-meta">DM Sans 500, 16px</span>
+      <span style="font-size:16px;font-weight:500;color:var(--t)">Resource Allocation Graph</span>
+    </div>
+    <div class="type-sample">
+      <span class="type-meta">DM Sans 400, 13px</span>
+      <span style="font-size:13px;font-weight:400;color:var(--t2)">Process P1 is currently waiting for resource R2</span>
+    </div>
+    <div class="type-sample">
+      <span class="type-meta">DM Sans 400, 11px, uppercase</span>
+      <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)">Allocation matrix</span>
+    </div>
+    <div class="type-sample">
+      <span class="type-meta">JetBrains Mono 400, 12px</span>
+      <span style="font-size:12px;font-family:var(--mono);color:var(--accent)">P1 → R1 → P2 → R2 → P1</span>
+    </div>
+  </div>
+</div>
+
+<div class="comp-grid section">
+  <div>
+    <div class="section-title">Buttons</div>
+    <div>
+      <span class="btn btn-pri">▶ Detect Deadlock</span>
+      <span class="btn">→ Step</span>
+      <span class="btn btn-danger">✕ Clear</span>
+      <span class="btn btn-ghost">Import ↑</span>
+      <span class="btn btn-icon">⊕</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">Graph nodes</div>
+    <div class="node-row">
+      <div>
+        <div class="demo-process" style="background:rgba(109,117,247,0.12);border:2px solid #6d75f7;color:#9aa0f9">P1</div>
+        <div class="node-label">Process<br>default</div>
+      </div>
+      <div>
+        <div class="demo-process" style="background:rgba(247,97,75,0.12);border:2px solid #f7614b;color:#f7614b">P2</div>
+        <div class="node-label">Process<br>deadlocked</div>
+      </div>
+      <div>
+        <div class="demo-process" style="background:rgba(62,207,142,0.1);border:2px solid #3ecf8e;color:#3ecf8e">P3</div>
+        <div class="node-label">Process<br>safe</div>
+      </div>
+      <div>
+        <div class="demo-resource" style="background:rgba(109,117,247,0.1);border:2px solid #6d75f7;color:#8b91f7">
+          R1
+          <div class="inst-dots">
+            <div class="inst-dot" style="background:#6d75f7;opacity:.9"></div>
+            <div class="inst-dot" style="background:#6d75f7;opacity:.4"></div>
+          </div>
+        </div>
+        <div class="node-label">Resource<br>2 instances</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">Edge styles</div>
+    <div class="edge-demo">
+      <div class="edge-line"><div class="eline" style="background:#6d75f7"></div><span>Request edge (P → R)</span></div>
+      <div class="edge-line"><div class="eline" style="background:#f5a623"></div><span>Allocation edge (R → P)</span></div>
+      <div class="edge-line"><div class="edash" style="border-color:#f7614b"></div><span>Deadlock cycle</span></div>
+      <div class="edge-line"><div class="eline" style="background:var(--b2)"></div><span>Neutral / inactive</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">Status toasts</div>
+    <div class="toast" style="background:rgba(247,97,75,0.1);border-color:rgba(247,97,75,0.3);color:var(--red)">
+      <span class="sd-icon">⚠</span><div><strong>Deadlock detected</strong><br><span style="color:var(--t2);font-size:11px">Cycle: P1→R1→P2→R2→P1</span></div>
+    </div>
+    <div class="toast" style="background:rgba(62,207,142,0.08);border-color:rgba(62,207,142,0.25);color:var(--green)">
+      <span class="sd-icon">✓</span><div><strong>Safe state</strong><br><span style="color:var(--t2);font-size:11px">Safe sequence: P3, P2, P1</span></div>
+    </div>
+    <div class="toast" style="background:rgba(109,117,247,0.08);border-color:rgba(109,117,247,0.25);color:var(--accent)">
+      <span class="sd-icon">ℹ</span><div><strong>Banker's step 2/4</strong><br><span style="color:var(--t2);font-size:11px">P3 can be safely allocated</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Spacing scale</div>
+  <div>
+    <div class="sp-row"><div class="sp-box" style="width:4px"></div><span class="sp-label">4px — xs</span><span style="font-size:11px;color:var(--t3)">icon gaps, tight inlines</span></div>
+    <div class="sp-row"><div class="sp-box" style="width:8px"></div><span class="sp-label">8px — sm</span><span style="font-size:11px;color:var(--t3)">button padding, chip gaps</span></div>
+    <div class="sp-row"><div class="sp-box" style="width:12px"></div><span class="sp-label">12px — md</span><span style="font-size:11px;color:var(--t3)">panel padding, row gaps</span></div>
+    <div class="sp-row"><div class="sp-box" style="width:16px"></div><span class="sp-label">16px — lg</span><span style="font-size:11px;color:var(--t3)">section spacing, card padding</span></div>
+    <div class="sp-row"><div class="sp-box" style="width:24px"></div><span class="sp-label">24px — xl</span><span style="font-size:11px;color:var(--t3)">between major panels</span></div>
+    <div class="sp-row"><div class="sp-box" style="width:40px"></div><span class="sp-label">40px — 2xl</span><span style="font-size:11px;color:var(--t3)">section headers, layout margins</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Badges &amp; chips</div>
+  <div>
+    <span class="badge" style="background:rgba(247,97,75,0.12);color:var(--red)">DEADLOCK</span>
+    <span class="badge" style="background:rgba(62,207,142,0.1);color:var(--green)">SAFE</span>
+    <span class="badge" style="background:rgba(245,166,35,0.12);color:var(--amber)">WARNING</span>
+    <span class="badge" style="background:rgba(109,117,247,0.12);color:var(--accent)">INFO</span>
+    <span class="badge" style="background:var(--s2);color:var(--t2);border:1px solid var(--b)">P1 → R1</span>
+    <span class="badge" style="background:var(--s2);color:var(--amber);border:1px solid var(--b)">R2 → P1</span>
+  </div>
+</div>
